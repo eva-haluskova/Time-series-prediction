@@ -18,7 +18,7 @@ dlzkaVstupu = length(data);
 
     % tvorba autoregresie, predikcia, tunel
 
-    tunel = zeros(2, vystup - dlzkaOkna);
+    tunel = zeros(3, vystup - dlzkaOkna);
     
     for t = 1:vystup-dlzkaOkna
         u = data(zaciatok + t - 1: zaciatok + t + dlzkaOkna - 2);
@@ -36,7 +36,7 @@ dlzkaVstupu = length(data);
         tunel(1, t) = sh + 2*so;
         tunel(2, t) = sh - 2*so;
     
-        %odhadnutyProces(t) = hodnotyDoTunela(1);
+        tunel(3,t) = hodnotyDoTunela(1);
     end
 
 end

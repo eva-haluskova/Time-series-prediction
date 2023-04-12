@@ -19,7 +19,7 @@ function tunel = regresny_polynom(data,dlzkaOkna,pocetPredikovanych,zaciatok,vys
     % tvorba regresie, predikcia, tunel
     time = linspace(1, dlzkaOkna, dlzkaOkna);
     timePredikovane = linspace(1, dlzkaOkna + pocetPredikovanych, dlzkaOkna + pocetPredikovanych);
-    tunel = zeros(2, vystup - dlzkaOkna);
+    tunel = zeros(3, vystup - dlzkaOkna);
 
     for t = 1: vystup - dlzkaOkna
     u = data(zaciatok + t - 1: zaciatok + t + dlzkaOkna - 2);
@@ -32,6 +32,6 @@ function tunel = regresny_polynom(data,dlzkaOkna,pocetPredikovanych,zaciatok,vys
     tunel(1, t) = sh + 2*so;
     tunel(2, t) = sh - 2*so;
 
-    %odhadnutyProces(t) = hodnotyDoTunela(1);
+    tunel(3,t) = hodnotyDoTunela(1);
     end
 end
