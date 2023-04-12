@@ -5,16 +5,7 @@
 
 function tunel = dve_sigmy(data,dlzkaOkna,zaciatok,vystup)
     
-    dlzkaVstupu = length(data);
-    if vystup > dlzkaVstupu
-        vystup = dlzkaVstupu -1;
-    end
-    
     pocetPredikovanych = vystup - dlzkaOkna;
-    
-    if zaciatok > dlzkaVstupu - vystup
-        zaciatok = dlzkaVstupu - vystup;
-    end
 
     % tvorba tunelu
     u = data(zaciatok: zaciatok + dlzkaOkna + pocetPredikovanych - 1);

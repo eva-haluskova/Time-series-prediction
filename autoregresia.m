@@ -7,17 +7,6 @@
 
 function tunel = autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup)
     
-dlzkaVstupu = length(data);
-    if vystup > dlzkaVstupu
-        vystup = dlzkaVstupu -1;
-    end
-    
-    if zaciatok > dlzkaVstupu - vystup
-        zaciatok = dlzkaVstupu - vystup;
-    end
-
-    % tvorba autoregresie, predikcia, tunel
-
     tunel = zeros(3, vystup - dlzkaOkna);
     
     for t = 1:vystup-dlzkaOkna
