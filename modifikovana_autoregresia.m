@@ -2,9 +2,9 @@
 
 function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,kalibracia)
 
-    tunel = zeros(3, vystup - dlzkaOkna);
+    tunel = zeros(3, vystup - kalibracia);
     data = data(zaciatok:end);
-    for t = 1:vystup
+    for t = 1:vystup-kalibracia
         u = data(t:end);
     
         % bazicka matica - to iste ako pri normalnej ar

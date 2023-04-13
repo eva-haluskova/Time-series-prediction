@@ -39,25 +39,25 @@ clear
 % volitelne parametre
 okno = 2048;
 utok = 1;
-parameter = 'sk';
-metoda = 1;
-vyhladenie = 0;
+parameter = 'k';
+metoda = 5;
+vyhladenie = 2;
 
 vykreslenie = 1;
 
 dlzkaOkna = 100;
 pocetPredikovanych = 10;
-zaciatok = 9500;
-vystup = 1000;
+zaciatok = 1;
+vystup = 100000;
 
 polynom = 2;
 kalibracia = 400;
 % 0 - pareto, 1 - peaks
-fourierka_koeficienty = 1;
+fourierka_koeficienty = 0;
 % <0,1>
-alfa = 0.95;
+alfa = 0.05;
 beta = 0.8;
-kk = 0.8;
+kk = 0.5;
 
 % nacianie daneho utorku s danou sirkou okna  
 if okno == 512
@@ -130,6 +130,10 @@ else
     casRozpoznaniaM = 7345;
 end  
 
+% odpocitavam pretoze aprameter mi zacina az za tym oknom.
+casUtoku = casUtoku - okno;
+casRozpoznaniaM = casRozpoznaniaM - okno;
+
 % podla vyberu vypoctu parametra sa do premennej data ulozi parameter
 switch parameter
     case 'e'
@@ -156,16 +160,17 @@ switch parameter
         data = divg;
 end 
 
+dlzkaParam = length(data); % dlzka parametra
 N = length(a); % dlzka utoku, nie dlzka parametra ani tunela...
 
 % kontrola spravnej dlzky
-
-if vystup > N - okno
-    vystup = N - okno - 1;
+% !!!!!
+if vystup > dlzkaParam
+    vystup = dlzkaParam - 1;
 end
 
-if zaciatok > (N - vystup - okno)
-    zaciatok = N - vystup - okno;
+if zaciatok > (dlzkaParam-vystup)
+    zaciatok = dlzkaParam-vystup;
 end
 
 % vyber vyhladenia
@@ -189,34 +194,81 @@ switch metoda
     case 4
         tunel = autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup);
     otherwise
-        tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,kalibracia);
+        tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup-okno,kalibracia);
 end
 
 % na vykreslenie
 
 timeTunel = linspace(zaciatok+dlzkaOkna + 1, zaciatok+vystup, vystup - dlzkaOkna);
 timeVystup = linspace(zaciatok, zaciatok+vystup, vystup);
-uPovodny = data(zaciatok: zaciatok + vystup - 1);
-
+if metoda == 5
+    uPovodny = data(zaciatok+dlzkaOkna: zaciatok+dlzkaOkna + vystup-okno - 1);
+    timeVystup = linspace(zaciatok, zaciatok+vystup-okno, vystup-okno);
+else
+    uPovodny = data(zaciatok: zaciatok + vystup - 1);
+end
 % horna hranica
-centrHore = uPovodny(dlzkaOkna + 1: dlzkaOkna + vystup - dlzkaOkna) - tunel(1,:);
-
+if metoda == 5 
+    centrHore = uPovodny(kalibracia + 1: dlzkaOkna + vystup-okno - dlzkaOkna) - tunel(1,:);
+else
+    centrHore = uPovodny(dlzkaOkna + 1: dlzkaOkna + vystup - dlzkaOkna) - tunel(1,:);
+end
 % dolna hranica
-centrDole = uPovodny(dlzkaOkna + 1: dlzkaOkna + vystup - dlzkaOkna) - tunel(2,:);
+if metoda == 5 
+    centrDole = uPovodny(kalibracia + 1: dlzkaOkna + vystup-okno - dlzkaOkna) - tunel(2,:);
+else
+    centrDole = uPovodny(dlzkaOkna + 1: dlzkaOkna + vystup - dlzkaOkna) - tunel(2,:);
+end
 
-% pocet falosnych
+% pocet falosnych Pocet
 pocetFalosnych = 0;
-%{
-for t = 2:casUtoku-zaciatok-dlzkaOkna         % vystup - dlzkaOkna
-    if centrHore(t) > 0 && centrHore(t-1) <= 0
+if metoda == 5
+    for t = 2:casUtoku-(zaciatok+kalibracia+dlzkaOkna)
+        if centrHore(t) > 0 && centrHore(t-1) <= 0
         pocetFalosnych = pocetFalosnych + 1;
+        end
+    end
+else
+    for t = 2:casUtoku-(zaciatok+dlzkaOkna)
+        if centrHore(t) > 0 && centrHore(t-1) <= 0
+            pocetFalosnych = pocetFalosnych + 1;
+        end
     end
 end
-%}
+% pocet falosnych Sloty
+pocetFalosnychSlotov = 0;
+if metoda == 5
+    for t = 2:casUtoku-(zaciatok+kalibracia+dlzkaOkna)
+        if centrHore(t) > 0
+            pocetFalosnychSlotov = pocetFalosnychSlotov + 1;
+        end
+    end
+else
+    for t = 2:casUtoku-(zaciatok+dlzkaOkna)
+        if centrHore(t) > 0
+            pocetFalosnychSlotov = pocetFalosnychSlotov + 1;
+        end
+    end
+end
 
 % cas rozpoznania voci klzavemu priemeru
-casVociM= 0;
+cas = 0;
+if metoda == 5
+    t = casUtoku-(zaciatok+kalibracia+dlzkaOkna);
+else
+    t = casUtoku-(zaciatok+dlzkaOkna);
+end    
+while centrHore(t) < 0
+    cas = cas + 1;
+    if t < length(centrHore)
+        t = t + 1;
+    else
+        break;
+    end
+end
 
+casVociM = 100 - (cas*100)/(casRozpoznaniaM-casUtoku);  
+%casVociM = cas; 
 % pre nazov ulozenia a vykreslenie
 switch metoda
     case 1
@@ -228,7 +280,7 @@ switch metoda
     case 4
         met = 'autoregresia';
     otherwise
-        met = 'modifikovana_autoregresia';
+        met = 'modifikovanaautoregresia';
 end
 
 switch parameter
@@ -252,92 +304,117 @@ switch parameter
         par = 'divergencia';
 end 
 
-
 % vykreslenie vytvoreneho tunelu
 figure('Units', 'normalized', 'Position', [0.15, 0.15, 0.65, 0.65]);
 hold on;
-title(met)
+switch vykreslenie
+    case 1
+        title(['Útok\_',num2str(utok),'\_cw\_',num2str(okno),'\_tunel\_',met])
+    case 2
+        title(['Útok\_',num2str(utok),'\_cw\_',num2str(okno),'\_odhadnuty\_proces\_',met])
+    case 3
+        title(['Útok\_',num2str(utok),'\_cw\_',num2str(okno),'\_horna\_hranica\_',met])
+    case 4
+        title(['Útok\_',num2str(utok),'\_cw\_',num2str(okno),'\_dolna\_hranica\_',met])
+    case 5
+        title(['Útok\_',num2str(utok),'\_cw\_',num2str(okno),'\_vyhladenie\_',met])
+end
 xlabel('ts')
 ylabel(par)
 
 % vykreslenie + ulozenie
 switch vykreslenie
     case 1 % tunel
-        plot(timeVystup, uPovodny,'blue', timeTunel, tunel(1,:),'black', timeTunel, tunel(2,:), 'black');
-        plot([casUtoku-okno casUtoku-okno],[min(tunel(2,:)) max(tunel(1,:))], 'red--', 'LineWidth',2) % cas utoku
-        plot([zaciatok+dlzkaOkna zaciatok+dlzkaOkna], [min(tunel(2,:)) max(tunel(1,:))], 'black--','LineWidth',2) % zaciatok tvorby tunela
+        if metoda == 5
+            plot(timeVystup, uPovodny,'blue', timeVystup(kalibracia+1:end), tunel(1,:),'black', timeVystup(kalibracia+1:end), tunel(2,:), 'black');
+            plot([casUtoku-dlzkaOkna casUtoku-dlzkaOkna],[min(tunel(2,:)) max(tunel(1,:))], 'black--', 'LineWidth',2) % cas utoku
+            plot([zaciatok+kalibracia zaciatok+kalibracia], [min(tunel(2,:)) max(tunel(1,:))], 'black--','LineWidth',2) % zaciatok tvorby tunela
+            
+            anArrow = annotation('textarrow') ;
+            anArrow.Parent = gca;
+            anArrow.Position = [casUtoku-500, max(tunel(1,:)), 450, 0] ;
+            anArrow.String = 'zaciatok utoku ';
+            anArrow.Color = 'black';
+        else
+            plot(timeVystup, uPovodny,'blue', timeTunel, tunel(1,:),'black', timeTunel, tunel(2,:), 'black');
+            plot([casUtoku casUtoku],[min(tunel(2,:)) max(tunel(1,:))], 'black--', 'LineWidth',2) % cas utoku
+            plot([zaciatok+dlzkaOkna zaciatok+dlzkaOkna], [min(tunel(2,:)) max(tunel(1,:))], 'black--','LineWidth',2) % zaciatok tvorby tunela
+            
+            anArrow = annotation('textarrow') ;
+            anArrow.Parent = gca;
+            anArrow.Position = [casUtoku-500, max(tunel(1,:)), 450, 0] ;
+            anArrow.String = 'zaciatok utoku ';
+            anArrow.Color = 'black';
+        end
+        annotation('textbox',...
+            [0.137820512820513 0.833757834757836 0.133413461538462 0.0584045584045584],...
+            'String',{'začiatok tunelu'},...
+            'EdgeColor',[1 1 1]);
 
-        
-        %annotation('arrow',[(casUtoku-zaciatok/vystup)+0.05 (casUtoku/N)],[0.85 0.75]);
-        %{
-        annotation('arrow',[0.14+dlzkaOkna/(vystup*1.2)+0.0481 0.14+dlzkaOkna/(vystup*1.2)],[0.853276353276354 0.816239316239317]);
-        annotation('textbox', [0.14+dlzkaOkna/(vystup*1.2) 0.846578347578348 0.14+dlzkaOkna/(vystup*1.2) 0.0584045584045584],...
-            'String',{'začiatok tunelu'},'EdgeColor',[1 1 1]);
 
-        annotation('arrow',[(0.14+(casUtoku-zaciatok)/(vystup*1.2)+0.0481)*0.95 (0.14+(casUtoku-zaciatok)/(vystup*1.2))*0.95],[0.853276353276354 0.816239316239317]);
-        annotation('textbox', [0.14+(casUtoku-zaciatok)/(vystup*1.2) 0.846578347578348 0.14+(casUtoku-zaciatok)/(vystup*1.2) 0.0584045584045584],...
-           'String',{'začiatok útoku'},'EdgeColor',[1 1 1]);
-        %}
-       
-        nazovFiguryPng = ['utok_',num2str(utok),'\tunel\tunel_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.png'];
-        nazovFiguryFig = ['utok_',num2str(utok),'\tunel\tunel_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.fig'];
+        nazovFiguryPng = ['utok_',num2str(utok),'\tunel\holtovo\',num2str(okno),'\',met,'\','tunel_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.png'];
+        nazovFiguryFig = ['utok_',num2str(utok),'\tunel\holtovo\',num2str(okno),'\',met,'\','tunel_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.fig'];
     
     case 2 % odhadnuty proces
-        plot(timeTunel,tunel(3,:), 'green--')
-        plot(timeVystup,uPovodny);
+        if metoda == 5
+            plot(timeVystup(kalibracia+1:end),tunel(3,:), 'red--')
+            plot(timeVystup,uPovodny,'black');
+            plot([zaciatok+kalibracia zaciatok+kalibracia], [min(tunel(3,:)) max(tunel(3,:))], 'black--','LineWidth',2) % zaciatok tvorby tunela
+       
+        else    
+            plot(timeTunel,tunel(3,:), 'red--')
+            plot(timeVystup,uPovodny,'black');
+            plot([zaciatok+dlzkaOkna zaciatok+dlzkaOkna], [min(tunel(3,:)) max(tunel(3,:))], 'black--','LineWidth',2) % zaciatok tvorby tunela
+        end
 
+            annotation('textbox',...
+        [0.137820512820513 0.833757834757836 0.133413461538462 0.0584045584045584],...
+        'String',{'začiatok tunelu'},...
+        'EdgeColor',[1 1 1]);
+    
+    
         nazovFiguryPng = ['utok_',num2str(utok),'\odhadnuty_proces\odhadnuty_proces_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.png'];
         nazovFiguryFig = ['utok_',num2str(utok),'\odhadnuty_proces\odhadnuty_proces_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.fig'];
     
     case 3 % horna hranica
-        plot(timeTunel, centrHore, 'blue', timeTunel, 0 * ones(1,vystup-dlzkaOkna), 'black')
-        plot([casUtoku-okno casUtoku-okno],[min(centrHore) max(centrHore)], 'black--', 'LineWidth',2) % cas utorku
-        %{
-        annotation('arrow',[(0.14+(casUtoku-zaciatok)/(vystup*1.2)+0.0481)*0.95 (0.14+(casUtoku-zaciatok)/(vystup*1.2))*0.95],[0.853276353276354 0.816239316239317]);
-        annotation('textbox', [0.14+(casUtoku-zaciatok)/(vystup*1.2) 0.846578347578348 0.14+(casUtoku-zaciatok)/(vystup*1.2) 0.0584045584045584],...
-           'String',{'začiatok útoku'},'EdgeColor',[1 1 1]);
-        %}
+        if metoda == 5
+            plot(timeVystup(kalibracia+1:end), centrHore, 'blue', timeVystup, 0 * ones(1,vystup), 'black')
+            plot([casUtoku-dlzkaOkna casUtoku-dlzkaOkna],[min(centrHore) max(centrHore)], 'black--', 'LineWidth',2) % cas utoku
+            plot([casRozpoznaniaM-dlzkaOkna casRozpoznaniaM-dlzkaOkna],[min(centrHore) max(centrHore)], 'black--', 'LineWidth',2) % cas rozpozania klzaceho priemeru
+        else
+            plot(timeTunel, centrHore, 'blue', timeVystup, 0 * ones(1,vystup), 'black')
+            plot([casUtoku casUtoku],[min(centrHore) max(centrHore)], 'black--', 'LineWidth',2) % cas utoku
+            plot([casRozpoznaniaM casRozpoznaniaM],[min(centrHore) max(centrHore)], 'black--', 'LineWidth',2) % cas rozpozania klzaceho priemeru
+        end   
         nazovFiguryPng = ['utok_',num2str(utok),'\horna_hranica\horna_hranica_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.png'];
         nazovFiguryFig = ['utok_',num2str(utok),'\horna_hranica\horna_hranica_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.fig'];
     
     case 4 % dolna hranica
-        plot(timeTunel, centrDole, 'blue', timeTunel, 0 * ones(1,vystup-dlzkaOkna), 'black')
-        plot([casUtoku-okno casUtoku-okno],[min(centrDole) max(centrDole)], 'black--', 'LineWidth',2) % cas utorku
-        %{
-        annotation('arrow',[(0.14+(casUtoku-zaciatok)/(vystup*1.2)+0.0481)*0.95 (0.14+(casUtoku-zaciatok)/(vystup*1.2))*0.95],[0.853276353276354 0.816239316239317]);
-        annotation('textbox', [0.14+(casUtoku-zaciatok)/(vystup*1.2) 0.846578347578348 0.14+(casUtoku-zaciatok)/(vystup*1.2) 0.0584045584045584],...
-           'String',{'začiatok útoku'},'EdgeColor',[1 1 1]);
-        %}
-
+        if metoda == 5
+            plot(timeVystup(kalibracia+1:end), centrDole, 'blue', timeVystup, 0 * ones(1,vystup), 'black')
+            plot([casUtoku-dlzkaOkna casUtoku-dlzkaOkna],[min(centrDole) max(centrDole)], 'black--', 'LineWidth',2) % cas utoku
+        else
+            plot(timeTunel, centrDole, 'blue', timeVystup, 0 * ones(1,vystup), 'black')
+            plot([casUtoku casUtoku],[min(centrDole) max(centrDole)], 'black--', 'LineWidth',2) % cas utoku
+        end
         nazovFiguryPng = ['utok_',num2str(utok),'\dolna_hranica\dolna_hranica_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.png'];
         nazovFiguryFig = ['utok_',num2str(utok),'\dolna_hranica\dolna_hranica_utok_',num2str(utok),'_',num2str(okno),'_',par,'_',met,'.fig'];
     
     case 5 % vyhladenie
         n = length(povodneData);
         t = linspace(1,n,n);
-        plot(t(zaciatok:zaciatok+vystup),povodneData(zaciatok:zaciatok+vystup),t(zaciatok:zaciatok+vystup),data(zaciatok:zaciatok+vystup))
+        plot(t(zaciatok:zaciatok+vystup),povodneData(zaciatok:zaciatok+vystup),'blue')
+        plot(t(zaciatok:zaciatok+vystup),data(zaciatok:zaciatok+vystup),'red')
 end
 
 % vypis uspesnosti
 annotation('textbox',[0.00641025641025642 0.633903133903137 0.09375 0.291022792022797],...
-    'String',{'počet falošných:',num2str(pocetFalosnych),'...%','čas voči m:',num2str(casVociM)},'FitBoxToText','off');
+    'String',{'Počet falošných:',[num2str(pocetFalosnych),' krát'],[num2str(pocetFalosnychSlotov),' ts'],'Vylepšenie voči m:',[num2str(casVociM),' %']},'FitBoxToText','off');
 xlim([zaciatok zaciatok+vystup])
+%axis([zaciatok  max(tunel(1,:),uPovodny)   zaciatok+vystup  min(tunel(2,:),uPovodny)])
 hold off;
 
 
 % ulozenie
-%saveas(gcf, nazovFiguryPng);
-%saveas(gcf, nazovFiguryFig)
-length(a)
-
-
-% vykreslenie utoku original...
-%{
-n = length(a);
-t = linspace(1,n,n);
-hold on;
-plot(t,a,'blue')
-plot(t(okno+1:end),m,'red','LineWidth',2)
-legend('48')
-hold off;
-%}
+saveas(gcf, nazovFiguryPng)
+saveas(gcf, nazovFiguryFig)
