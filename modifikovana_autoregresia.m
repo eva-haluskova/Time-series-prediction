@@ -21,7 +21,7 @@ function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zac
         
         % vektor z ktocyh predikujem? Lebo najskro si nacvicim tie koeficienty a
         % potom na sto hodnotach predikujem 10, vsak?
-        vektorPredchodcov = u(kalibracia+1:kalibracia+dlzkaOkna);
+        vektorPredchodcov = u(kalibracia+1-dlzkaOkna:kalibracia);
         
         %predikujem, zakazdym si zoberem novy riadok c, teda koeficienty pre dasliu
         %hodnotu, salala
