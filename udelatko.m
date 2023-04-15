@@ -40,15 +40,15 @@ clear
 okno = 1024;
 utok = 1;
 parameter = 'k';
-metoda = 2;
+metoda = 5;
 vyhladenie = 0;
 
-vykreslenie = 3;
+vykreslenie = 1;
 
 dlzkaOkna = 100;
 pocetPredikovanych = 10;
-zaciatok = 8100;
-vystup = 1000;
+zaciatok = 1;
+vystup = 100000;
 
 polynom = 2;
 kalibracia = 400;
