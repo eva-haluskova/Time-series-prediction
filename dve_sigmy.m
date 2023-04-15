@@ -3,7 +3,7 @@
 % I = <str.hodnota - 2*odchylka, str.hodnota + 2*odchylka> 
 % Posúvame okno vždy o jedna a prepočítavame hodnoty nanovo.
 
-function tunel = dve_sigmy(data,dlzkaOkna,zaciatok,vystup)
+function tunel = dve_sigmy(data,dlzkaOkna,zaciatok,vystup,sigma)
     
     pocetPredikovanych = vystup - dlzkaOkna;
 
@@ -15,7 +15,7 @@ function tunel = dve_sigmy(data,dlzkaOkna,zaciatok,vystup)
         radNaPredikciu = u(t: t + dlzkaOkna - 1);
         so = std(radNaPredikciu);
         sh = mean(radNaPredikciu);
-        tunel(1, t) = sh + 2*so;
-        tunel(2, t) = sh - 2*so;
+        tunel(1, t) = sh + sigma*so;
+        tunel(2, t) = sh - sigma*so;
     end
 end

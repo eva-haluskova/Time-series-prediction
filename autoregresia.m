@@ -5,7 +5,7 @@
 % I = <str.hodnota - 2*odchylka, str.hodnota + 2*odchylka> 
 % Posúvame okno vždy o jedna a prepočítavame hodnoty nanovo.
 
-function tunel = autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup)
+function tunel = autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,sigma)
     
     tunel = zeros(3, vystup - dlzkaOkna);
     
@@ -22,8 +22,8 @@ function tunel = autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup)
         hodnotyDoTunela = u(dlzkaOkna + 1: dlzkaOkna + pocetPredikovanych);
         so = std(hodnotyDoTunela);
         sh = mean(hodnotyDoTunela);
-        tunel(1, t) = sh + 2*so;
-        tunel(2, t) = sh - 2*so;
+        tunel(1, t) = sh + sigma*so;
+        tunel(2, t) = sh - sigma*so;
     
         tunel(3,t) = hodnotyDoTunela(1);
     end

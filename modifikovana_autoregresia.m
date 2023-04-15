@@ -1,6 +1,6 @@
 % Vytvorenie tunelu pomocou modifikovanej autoregresie
 
-function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,kalibracia)
+function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,kalibracia,sigma)
 
     tunel = zeros(3, vystup - kalibracia-dlzkaOkna);
     data = data(zaciatok:end);
@@ -32,8 +32,8 @@ function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zac
         hodnotyDoTunela = fpredikovane;
         so = std(hodnotyDoTunela);
         sh = mean(hodnotyDoTunela);
-        tunel(1, t) = sh + 2*so;
-        tunel(2, t) = sh - 2*so;
+        tunel(1, t) = sh + sigma*so;
+        tunel(2, t) = sh - sigma*so;
     
         tunel(3,t) = hodnotyDoTunela(1);
     end

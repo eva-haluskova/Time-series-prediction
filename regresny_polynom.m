@@ -5,7 +5,7 @@
 % I = <str.hodnota - 2*odchylka, str.hodnota + 2*odchylka> 
 % Posúvame okno vždy o jedna a prepočítavame hodnoty nanovo.
 
-function tunel = regresny_polynom(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,polynom)
+function tunel = regresny_polynom(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,polynom,sigma)
 
     time = linspace(1, dlzkaOkna, dlzkaOkna);
     timePredikovane = linspace(1, dlzkaOkna + pocetPredikovanych, dlzkaOkna + pocetPredikovanych);
@@ -19,8 +19,8 @@ function tunel = regresny_polynom(data,dlzkaOkna,pocetPredikovanych,zaciatok,vys
     hodnotyDoTunela = f(dlzkaOkna + 1:end);
     so = std(hodnotyDoTunela);
     sh = mean(hodnotyDoTunela);
-    tunel(1, t) = sh + 2*so;
-    tunel(2, t) = sh - 2*so;
+    tunel(1, t) = sh + sigma*so;
+    tunel(2, t) = sh - sigma*so;
 
     tunel(3,t) = hodnotyDoTunela(1);
     end

@@ -6,7 +6,7 @@
 % I = <str.hodnota - 2*odchylka, str.hodnota + 2*odchylka> 
 % Posúvame okno vždy o jedna a prepočítavame hodnoty nanovo.
 
-function tunel = fourierova_transformacia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,metodaKoef)
+function tunel = fourierova_transformacia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,metodaKoef,sigma)
     
     tunel = zeros(3, vystup - dlzkaOkna);
 
@@ -70,8 +70,8 @@ function tunel = fourierova_transformacia(data,dlzkaOkna,pocetPredikovanych,zaci
         hodnotyDoTunela = funkcia(dlzkaOkna + 1: end);
         so = std(hodnotyDoTunela);
         sh = mean(hodnotyDoTunela);
-        tunel(1, t) = sh + 2*so;
-        tunel(2, t) = sh - 2*so;
+        tunel(1, t) = sh + sigma*so;
+        tunel(2, t) = sh - sigma*so;
     
         tunel(3,t) = hodnotyDoTunela(1);
     end
