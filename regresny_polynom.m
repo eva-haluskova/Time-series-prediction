@@ -19,8 +19,8 @@ function tunel = regresny_polynom(data,dlzkaOkna,pocetPredikovanych,zaciatok,vys
     hodnotyDoTunela = f(dlzkaOkna + 1:end);
     so = std(hodnotyDoTunela);
     sh = mean(hodnotyDoTunela);
-    tunel(1, t) = sh + 2*so;
-    tunel(2, t) = sh - 2*so;
+    tunel(1, t) = sh + 3*so;
+    tunel(2, t) = sh - 3*so;
 
     tunel(3,t) = hodnotyDoTunela(1);
     end
