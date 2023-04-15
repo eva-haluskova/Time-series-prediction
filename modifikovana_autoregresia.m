@@ -2,14 +2,14 @@
 
 function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zaciatok,vystup,kalibracia)
 
-    tunel = zeros(3, vystup - kalibracia);
+    tunel = zeros(3, vystup - kalibracia-pocetPredikovanych);
     data = data(zaciatok:end);
-    for t = 1:vystup-kalibracia
+    for t = 1:vystup-kalibracia-dlzkaOkna-pocetPredikovanych
         u = data(t:end);
     
         % bazicka matica - to iste ako pri normalnej ar
         for prem=1:dlzkaOkna
-            B(prem,:) = u(1+prem-1:kalibracia+prem-1);
+            B(prem,:) = u(prem:kalibracia+prem-1);
         end
         
         % procesy na natrenovanie posunute pre kazde prediokvane...
@@ -18,7 +18,7 @@ function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zac
         end
         
         c = (f*B')*(B*B')^(-1);  % koeficienty pre predikciu
-        
+       
         % vektor z ktocyh predikujem? Lebo najskro si nacvicim tie koeficienty a
         % potom na sto hodnotach predikujem 10, vsak?
         vektorPredchodcov = u(kalibracia+1-dlzkaOkna:kalibracia);

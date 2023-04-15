@@ -37,10 +37,10 @@ clear
 % 2 - modifikovane holtovo
 
 % volitelne parametre
-okno = 2048;
+okno = 512;
 utok = 1;
 parameter = 'e';
-metoda = 5;
+metoda = 4;
 vyhladenie = 0;
 
 vykreslenie = 1;
@@ -48,7 +48,7 @@ vykreslenie = 1;
 dlzkaOkna = 100;
 pocetPredikovanych = 10;
 zaciatok = 1;
-vystup = 60000;
+vystup = 100000;
 
 polynom = 2;
 kalibracia = 400;
@@ -207,13 +207,13 @@ if metoda == 5
 end
 % horna hranica
 if metoda == 5 
-    centrHore = uPovodny(kalibracia + 1: kalibracia+ vystup- kalibracia) - tunel(1,:);
+    centrHore = uPovodny(kalibracia + 1: kalibracia+ vystup- kalibracia-pocetPredikovanych) - tunel(1,:);
 else
     centrHore = uPovodny(dlzkaOkna + 1: dlzkaOkna + vystup - dlzkaOkna) - tunel(1,:);
 end
 % dolna hranica
 if metoda == 5 
-    centrDole = uPovodny(kalibracia + 1: kalibracia + vystup-kalibracia) - tunel(2,:);
+    centrDole = uPovodny(kalibracia + 1: kalibracia + vystup-kalibracia-pocetPredikovanych) - tunel(2,:);
 else
     centrDole = uPovodny(dlzkaOkna + 1: dlzkaOkna + vystup - dlzkaOkna) - tunel(2,:);
 end
@@ -345,7 +345,7 @@ ylabel(par)
 switch vykreslenie
     case 1 % tunel
         if metoda == 5
-            plot(timeVystup, uPovodny,'blue', timeVystup(kalibracia+1:end), tunel(1,:),'black', timeVystup(kalibracia+1:end), tunel(2,:), 'black');
+            plot(timeVystup(1:end-dlzkaOkna-pocetPredikovanych), uPovodny(1:end-dlzkaOkna-pocetPredikovanych),'blue', timeVystup(kalibracia+1:end-pocetPredikovanych-dlzkaOkna), tunel(1,1:end-dlzkaOkna),'black', timeVystup(kalibracia+1:end-pocetPredikovanych-dlzkaOkna), tunel(2,1:end-dlzkaOkna), 'black');
             plot([casUtoku casUtoku],[min(tunel(2,:)) max(tunel(1,:))], 'black--', 'LineWidth',2) % cas utoku
             plot([zaciatok+kalibracia zaciatok+kalibracia], [min(tunel(2,:)) max(tunel(1,:))], 'black--','LineWidth',2) % zaciatok tvorby tunela
             
@@ -358,7 +358,7 @@ switch vykreslenie
             plot(timeVystup, uPovodny,'blue', timeTunel, tunel(1,:),'black', timeTunel, tunel(2,:), 'black');
             plot([casUtoku casUtoku],[min(tunel(2,:)) max(tunel(1,:))], 'black--', 'LineWidth',2) % cas utoku
             plot([zaciatok+dlzkaOkna zaciatok+dlzkaOkna], [min(tunel(2,:)) max(tunel(1,:))], 'black--','LineWidth',2) % zaciatok tvorby tunela
-            plot([casRozpoznaniaM casRozpoznaniaM],[min(tunel(2,:)) max(tunel(1,:))], 'black--', 'LineWidth',2) % cas rozpozania klzaceho priemeru
+            %plot([casRozpoznaniaM casRozpoznaniaM],[min(tunel(2,:)) max(tunel(1,:))], 'black--', 'LineWidth',2) % cas rozpozania klzaceho priemeru
       
             anArrow = annotation('textarrow') ;
             anArrow.Parent = gca;
