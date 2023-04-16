@@ -37,5 +37,4 @@ function tunel = modifikovana_autoregresia(data,dlzkaOkna,pocetPredikovanych,zac
     
         tunel(3,t) = hodnotyDoTunela(1);
     end
-    length(tunel(1,:))
 end

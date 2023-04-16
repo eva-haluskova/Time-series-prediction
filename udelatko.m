@@ -38,21 +38,24 @@ clear
 
 % volitelne parametre
 
-utok = 1;
+utok = 2;
 
 okna = [512,1024,2048];
 metody = [1,2,3,4,5];
-parametricky = ["e","h","k","d","r","so","sk","v","c"];
+parametricky = ["c","d","e","h","v","r","k","so","sk"];
 vyhladenicka = [0,1,2];
 
-for okenicko = okna
 
-    for metodka = metody
-
-        for paramko = parametricky
-
-            for vyhladenicko = vyhladenicka
-
+for vyhladenicko = vyhladenicka
+    
+    for okenicko = okna
+    
+        vysledky = strings(length(metody),length(parametricky));
+        pocMet = 1;
+        for metodka = metody
+            pocPar = 1;
+            for paramko = parametricky
+                
                 okno = okenicko;
                 parameter = paramko;
                 metoda = metodka;
@@ -60,9 +63,8 @@ for okenicko = okna
 
                 %okno = 512;
                 %parameter = paramko;
-                %metoda = 2;
+                %metoda = 3;
                 %vyhladenie = 0;           
-
 
                 vykreslenie = 1;
                 
@@ -532,7 +534,23 @@ for okenicko = okna
                 saveas(gcf, nazovFiguryFig)
 
                 close(gcf)
+                
+                % ukladanie do pola
+                hodnoticky = num2str(pocetFalosnych)+","+num2str(pocetFalosnychSlotov)+","+num2str(casVociM);
+                hodnoticky = string(hodnoticky);
+                vysledky(pocMet,pocPar) = hodnoticky;
+
+
+                pocPar = pocPar + 1;
             end
+            pocMet = pocMet + 1;
         end
+        nazovSuboru = ['utok_',num2str(utok),'\tunel\',vyhl,'\',num2str(okno),'\',num2str(okno),'.txt'];
+        file = fopen(nazovSuboru,'w');
+        for i = metody
+            riadok = strjoin(vysledky(i,:),';');
+            fprintf(file,'%s\n', riadok);
+        end
+        fclose(file);
     end
 end
